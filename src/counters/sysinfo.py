@@ -1,5 +1,6 @@
-# -*- coding -*-
+# -*- coding: utf-8 -*-
 import psutil
+
 
 def get_sysinfo():
     result = {}
@@ -10,14 +11,20 @@ def get_sysinfo():
         r = psutil.disk_usage(part.mountpoint)
         result['disk_utilization(%s)' % part.mountpoint] = r.percent
     for k, v in psutil.disk_io_counters(True).items():
-        if k.startswith('dm'): continue
-        result['disk_io_read_bytes(%s)' % k] = v.read_bytes 
-        result['disk_io_write_bytes(%s)' % k] = v.write_bytes 
+        if k.startswith('dm'):
+            continue
+        result['disk_io_read_bytes(%s)' % k] = v.read_bytes
+        result['disk_io_write_bytes(%s)' % k] = v.write_bytes
     for k, v in psutil.net_io_counters(True).items():
-        if not k.startswith('eth'): continue
+        if not k.startswith('eth'):
+            continue
         result['net_io_bytes_sent(%s)' % k] = v.bytes_sent
         result['net_io_bytes_recv(%s)' % k] = v.bytes_recv
     return result
+
+def get_data():
+    '插件专用方法，必须返回一个字典'
+    return get_sysinfo()
 
 
 if __name__ == '__main__':
