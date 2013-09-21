@@ -22,9 +22,17 @@ def get_sysinfo():
         result['net_io_bytes_recv(%s)' % k] = v.bytes_recv
     return result
 
-def get_data():
-    '插件专用方法，必须返回一个字典'
-    return get_sysinfo()
+
+class Counter(object):
+    'Counter插件类，必须使用Counter作为类名'
+    
+    def __init__(self, options):
+        '插件初始化方法，options是插件配置数据'
+        self.options = options
+
+    def get_data(self):
+        '插件专用方法，必须返回一个字典'
+        return get_sysinfo()
 
 
 if __name__ == '__main__':
