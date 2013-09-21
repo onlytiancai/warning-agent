@@ -4,6 +4,7 @@ from collections import namedtuple
 
 RuleConfig = namedtuple('RuleConfig', ['counter_name', 'max_value', 'max_count', 'title'])
 
+
 class Rule(object):
     'Rule插件类，必须使用Rule作为类名'
      
@@ -16,7 +17,7 @@ class Rule(object):
         self.rules = []
         for k, v in self.options.items():
             if not k.startswith('rule'):
-                continue 
+                continue
             rule = RuleConfig._make(v.split())
             logging.info('load rule config:%s', rule)
             self.rules.append(rule)
@@ -45,11 +46,10 @@ class Rule(object):
             if any([h < max_value for h in this_historys]):
                 continue
            
-            logging.info('will raise warning:%s %s', rule, this_historys)
-            return self._get_send_data(rule, data, this_historys) 
+            logging.debug('will raise warning:%s %s', rule, this_historys)
+            return self._get_send_data(rule, data, historys)
 
-        return None # 返回None不需报警
-
+        return None  # 返回None不需报警
 
     def _get_send_data(self, rule, data, historys):
         '''插件方法，必须实现
@@ -57,6 +57,7 @@ class Rule(object):
 
         result = {}
         result['title'] = rule.title
-        result['content'] = str(historys)
+        result['content'] = str([(h['time'].strftime('%Y-%m-%d %H:%M:%S'), h[rule.counter_name])
+                                 for h in historys[-int(rule.max_count):]])
         result['host'] = self.options['host'] if 'host' in self.options else 'default'
         return result
