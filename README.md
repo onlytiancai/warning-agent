@@ -12,7 +12,7 @@ warning-agent用来定时收集你服务器运行状态、性能、业务等信�
 
 下载安装
 
-    git clone git@github.com:onlytiancai/warning-agent.git
+    git clone https://github.com/onlytiancai/warning-agent.git 
     cd src/warning-agent
 
 打开config.ini，修改报警邮件配置
