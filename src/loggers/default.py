@@ -18,6 +18,7 @@ class Logger(object):
         self.max_log_cache = int(options['max_log_cache'])
 
         my_logger = logging.getLogger('counter')
+        my_logger.propagate = False
         my_logger.setLevel(logging.DEBUG)
         handler = logging.handlers.RotatingFileHandler(self.log_filename, maxBytes=100 * 1000 * 1000, backupCount=10)
         formatter = logging.Formatter('%(asctime)s %(message)s')

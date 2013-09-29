@@ -1,26 +1,78 @@
 ## warning-agent
 
-**简单介绍**
+我们的目标是让每一台服务器都安装有warning-agent。
+
+### 简单介绍###
 
 你的网站，VPS，服务器的性能，业务都需要进行监控，并在异常的时候及时通知你。
-warning-agent用来定时收集你服务器的性能，业务等计数信息，根据你定义好的规则，发现异常后通知你。
 
-本软件开源，免费，欢迎大家参与。
+warning-agent用来定时收集你服务器运行状态、性能、业务等信息，根据你定义好的规则，发现异常后通知你。
 
-本软件默认提供了对服务器常规的监控，已经满足了大多数人的基本需求，如果有个性需求，可以很简单的去扩展或联系我。
+### 快速上手
 
-**基本原理**
+下载安装
 
-1. 定时通过counter来获取CPU,内存，磁盘使用率, 磁盘IO，网络IO以及你想收集的任何计数信息。
-1. 获取到的计数信息会通过logger保存到磁盘或数据库中，以后排查问题可以使用。
-1. 当获取到新的计数信息时，会根据用户定义好的rule来判断当前系统和业务是否出现异常。
-1. 如果rule发现异常，就会调用sender把报警发送给你，具体怎么发送你可以完全定制。
+    git clone git@github.com:onlytiancai/warning-agent.git
+    cd src/warning-agent
 
-### 插件机制
+打开config.ini，修改报警邮件配置
 
-这是一个极度可扩展的组件，可以写如下插件来满足您的需求，每种插件写起来极简单，一般只需几行代码：
+    [sender:mail]
+    name = mail 
+    smtphost = smtp.163.com
+    username = sendwarnings@163.com
+    password = 1qaz1qaz
+    from = sendwarnings@163.com
+    ;可以用逗号隔开写多个报警收件人
+    to = wawasoft@qq.com
+    ssl = False
+    ;每小时最多发送多少报警
+    one_hour_max_send = 1
 
-* loggers: 用来存取各种性能计数信息，默认以文本形式保存，你可以写插件保存到redis,mysql里。
-* counters: 用来产生各种计数，默认只获取cpu,mem,io等信息，你可以写插件来获取redis,mysql，以及你的业务计数。
-* rules: 用来实现报警判断逻辑，默认只对系统性能进行报警，你可以写插件实现各种报警规则。
-* senders: 用来实现报警的发送，默认是发送到warnings.sinaapp.com，你可以写插件来发到你的邮箱，微信，短信。
+配置主机的基本报警规则
+
+    [rule:default]
+    name = default
+    ;主机名，对外发送报警时，区分多台机器
+    host = wawahost
+    ;以下每行为一个报警规则，格式为"计数器名称 阈值 超过阈值最大次数 报警的标题"
+    rule1 = cpu_utilization 70 5 CPU使用率连续5次超过70%
+    rule2 = mem_utilization 70 5 内存使用率连续5次超过70%
+    rule3 = swap_utilization 70 5 交换分区使用率连续5次超过70%
+    rule4 = disk_utilization 70 5 磁盘使用率连续5次超过70%
+
+如果要确保本机必须监听某些端口，做如下配置
+
+    [rule:tcpport]
+    name = tcpport 
+    host = wawahost
+    ;格式为"ip port 报警的标题"
+    rule1 = 127.0.0.1 80 nginx端口挂掉
+    rule2 = 127.0.0.1 27017 mongodb端口挂掉
+    rule3 = 127.0.0.1 3306 mysql端口挂掉
+
+如果要确保本机必须运行某些进程，做如下配置
+
+    [rule:process]
+    name = process 
+    host = wawahost
+    ;格式为"进程cmdline的正则匹配模式 报警的标题", 报警标题为最后一个空格之后的文字
+    rule1 = gunicorn mainweb:wsgiapp.*-k gevent 检测到wsgiapp进程不存在
+
+运行warning-agent
+
+    setsid python warning_agent_main.py &
+
+可以睡个好觉了，服务有问题你会收到通知的。
+
+小技巧
+
+1. 最好专门申请一个独立的邮箱用来发送报警，163,qq都可以免费注册邮箱。
+1. 接收报警的邮箱推荐用qq邮箱，引起如果你开通了微信的话，收到邮件后手机会有提醒。
+
+
+### 其它
+
+本软件默认功能能满足大多数用户的基本需求，但它很容易扩展，如果你有兴趣进一步了解并参与这个项目，可以看[详细文档](blob/master/docs/details.md)。
+
+如果你有什么疑问，可以[给我提issue](https://github.com/onlytiancai/warning-agent/issues)

@@ -23,6 +23,7 @@ class Sender(object):
         try:
             data = locals()
             data['app_id'] = self.options['app_id']
+            del data['self']
             data = urllib.urlencode(data)
 
             global last_hour, last_hour_send_count

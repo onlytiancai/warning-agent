@@ -6,8 +6,14 @@ import ConfigParser
 cfg = ConfigParser.ConfigParser()
 cfg.read('./config.ini')
 
-log_level = logging.DEBUG if cfg.getboolean('main', 'debug') else logging.INFO
-logging.basicConfig(level=log_level, format='%(asctime)s %(levelname)s %(module)s %(message)s')
+loglevel = cfg.get('main', 'logging_level')
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
+logging.basicConfig(level=numeric_level, 
+                    format='%(asctime)s %(levelname)s %(module)s %(message)s',
+                    filename='/var/log/wawa-warning-agent.log' if loglevel != 'debug' else None
+                    )
 
 logger_interval = cfg.getint('main', 'logger_interval')
 

@@ -52,9 +52,6 @@ class Rule(object):
         return None  # 返回None不需报警
 
     def _get_send_data(self, rule, data, historys):
-        '''插件方法，必须实现
-        data是最新的计数数据，caches是最近的数据'''
-
         result = {}
         result['title'] = rule.title
         result['content'] = str([(h['time'].strftime('%Y-%m-%d %H:%M:%S'), h[rule.counter_name])
